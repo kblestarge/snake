@@ -33,12 +33,23 @@ $(document).ready(function(){
 
 		//The movement code for the lights to come here.
 		//Start code here
+		var ny = lights_array[0].y;
 
-		var temp = lights_array[2]['color'];
-		lights_array[2]['color'] = lights_array[0]['color'];
-		lights_array[0]['color'] = temp;
+		var lastLight = lights_array.pop();
+		var firstLight = lights_array.shift();
 
-		console.log("temp:",temp);
+		firstLight.y = lastLight.y;
+		lastLight.y = ny;
+
+		lights_array.unshift(lastLight);
+		lights_array.push(firstLight);
+		
+
+		// var temp = lights_array[2]['color'];
+		// lights_array[2]['color'] = lights_array[0]['color'];
+		// lights_array[0]['color'] = temp;
+
+		// console.log("temp:",temp);
 
 		for(var i = 0; i < lights_array.length; i++)
 		{
