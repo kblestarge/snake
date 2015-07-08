@@ -11,18 +11,33 @@ $(document).ready(function(){
 	var colors = ["green", "yellow", "red", "orange"];
 	var swap = true;
 	var head;
+	var keyPressed = false;
+	var foodEaten = false;
+	var food = {};
 
 	var posNeg = 1;
 	var xy = 'y';
 	var snake_array = [];
 
 	create_snake();
+	createFood();
+
+	function main(){
+
+		foodEaten = false;
+		keyPressed = false;
+		paint();
+
+	}
+
+
 	function create_snake()
 	{
 		snake_array.push({x: 5, y:6, color: colors[0]});
 		snake_array.push({x: 5, y:5, color: colors[1]});
 		snake_array.push({x: 5, y:4, color: colors[2]});
 		snake_array.push({x: 5, y:3, color: colors[0]});
+		snake_array.push({x: 5, y:2, color: colors[1]});
 	}
 
 	function move_snake(){
@@ -36,7 +51,6 @@ $(document).ready(function(){
 
 				snake_array[i]['x'] = snake_array[i-1]['x'];
 				snake_array[i]['y'] = snake_array[i-1]['y'];
-
 		}
 
 		snake_array[0][xy] += posNeg;
@@ -44,7 +58,15 @@ $(document).ready(function(){
 
 	function death_check(){
 		head = snake_array[0];
-		if(head.x*cw >= w || head.x < 0 || head.y*cw >= h || head.y < 0){
+		var touch = false;
+
+		for(var i = 1; i < snake_array.length; i++){
+			if(snake_array[i].x == snake_array[0].x && snake_array[i].y == snake_array[0].y){
+				touch = true;
+			}
+		}
+
+		if(head.x*cw >= w || head.x < 0 || head.y*cw >= h || head.y < 0  || touch){
 			
 			//reset
 			swap = true
@@ -68,6 +90,8 @@ $(document).ready(function(){
 
 		death_check();
 
+		foodEaten = foodCheck();
+
 		for(var i = 0; i < snake_array.length; i++){
 
 			var c = snake_array[i];
@@ -77,58 +101,86 @@ $(document).ready(function(){
 			ctx.strokeStyle = "white";
 			ctx.strokeRect(c.x*cw, c.y*cw, cw, cw);
 		}
+
+		if(foodEaten){
+			createFood();
+			paintFood(food);
+		}else{
+			paintFood(food);
+		}
 	}
 
-	// function foodSpawn(){
-	// 	//randomly generate x and y coordinates for food spawn
-	// }
-
-	// function eatFood(){
-	// 	//collide event listener
-	// 	//snake array touches food
-
-	// 	//increment food eaten
-	// 	//if so many food are eaten, new level.
-	// }
-
-	// function eatSelf(){
-	// 	//collide event listener
-	// 	//snake array touches itself
-
-	// 	//restart
-	// }
-
-	// function onKeyPress(){ //change direction
-
-	// }
-
-	function main(){
-
-		paint();
-
+	function createFood(){
+		do{
+			food.x = Math.floor((Math.random() * 9));
+			food.y = Math.floor((Math.random() * 9));
+			food.color = colors[Math.floor((Math.random() * 4))];
+		}while(inBody());
 	}
 
-	$("body").keydown(function(e) {
-    	if(e.keyCode == 37 && xy != 'x') { //left
-    		xy = 'x';
-    		posNeg = -1;
-    	}else if(e.keyCode == 38 && xy != 'y') { //up
-    		xy = 'y';
-    		posNeg = -1;
-    	}else if(e.keyCode == 39 && xy != 'x') { //right
-    		xy = 'x';
-    		posNeg = 1;
-    	}else if(e.keyCode == 40 && xy != 'y') { //down
-    		xy = 'y';
-    		posNeg = 1;
-    	}else if(e.keyCode == 32) { //spac e
+	function inBody(){
+		var inBod = false;
+		for(var i = 0; i < snake_array.length; i++){
+			if(snake_array[i].x == food.x && snake_array[i].y == food.y){
+				inBod = true;
+			}
+		}
+		return inBod;
+	}
 
-    		var index = snake_array.length-1;
+	function paintFood(food){
+		ctx.fillStyle = food.color;
+		ctx.fillRect(food.x*cw, food.y*cw, cw, cw);
+		ctx.strokeStyle = "white";
+		ctx.strokeRect(food.x*cw, food.y*cw, cw, cw);
+	}
+
+	function foodCheck(){
+		if(snake_array[0].x == food.x && snake_array[0].y == food.y){
+
+			var index = snake_array.length-1;
     		var newX = snake_array[index].x;
     		var newY = snake_array[index].y;
 
     		snake_array.push({x: newX, y: newY, color: colors[3]});
-    	}
+
+    		return true;
+		}else{
+			return false;
+		}
+	}
+
+
+
+	$("body").keydown(function(e) {
+
+		if(!keyPressed){
+    		if(e.keyCode == 37 && xy != 'x') { //left
+	    		xy = 'x';
+	    		posNeg = -1;
+	    		keyPressed = true;
+	    	}else if(e.keyCode == 38 && xy != 'y') { //up
+	    		xy = 'y';
+	    		posNeg = -1;
+	    		keyPressed = true;
+	    	}else if(e.keyCode == 39 && xy != 'x') { //right
+	    		xy = 'x';
+	    		posNeg = 1;
+	    		keyPressed = true;
+	    	}else if(e.keyCode == 40 && xy != 'y') { //down
+	    		xy = 'y';
+	    		posNeg = 1;
+	    		keyPressed = true;
+	    	}else if(e.keyCode == 32) { //space bar
+
+	    		var index = snake_array.length-1;
+	    		var newX = snake_array[index].x;
+	    		var newY = snake_array[index].y;
+
+	    		snake_array.push({x: newX, y: newY, color: colors[3]});
+	    	}
+		}
+
 	})
 
 	//re-paint many times each second
