@@ -7,20 +7,38 @@ $(document).ready(function(){
 	var h = $("#canvas").height();
 
 	//Lets save the cell width in a variable for easy control
-	var cw = 50;
-	var colors = ["green", "yellow", "red", "orange"];
+	var cw = 20;
+	var colors = ["#F0C600", "#FF9000", "#DB5800", "orange"];
 	var swap = true;
+	var posNeg;
+	var xy;
+	var snake_array = [];
 	var head;
 	var keyPressed = false;
 	var foodEaten = false;
 	var food = {};
+	var score;
+	var highScore = 0;
+	var level;
+	var levelUp;
+	var gameSpeed;
 
-	var posNeg = 1;
-	var xy = 'y';
-	var snake_array = [];
+	function init(){
+		score = 0;
+		level = 1;
+		levelUp = false;
+		swap = true
+		posNeg = 1;
+		xy = 'y';
+		snake_array = [];
+		gameSpeed = 150;
 
-	create_snake();
-	createFood();
+		create_snake();
+		createFood();
+		game_loop_norm();
+	}
+	init()
+	
 
 	function main(){
 
@@ -33,11 +51,11 @@ $(document).ready(function(){
 
 	function create_snake()
 	{
-		snake_array.push({x: 5, y:6, color: colors[0]});
-		snake_array.push({x: 5, y:5, color: colors[1]});
-		snake_array.push({x: 5, y:4, color: colors[2]});
-		snake_array.push({x: 5, y:3, color: colors[0]});
-		snake_array.push({x: 5, y:2, color: colors[1]});
+		snake_array.push({x: 5, y:6, color: '#59631E'});
+		snake_array.push({x: 5, y:5, color: '#8EA106'});
+		snake_array.push({x: 5, y:4, color: '#8EA106'});
+		snake_array.push({x: 5, y:3, color: '#8EA106'});
+		snake_array.push({x: 5, y:2, color: '#8EA106'});
 	}
 
 	function move_snake(){
@@ -68,12 +86,16 @@ $(document).ready(function(){
 
 		if(head.x*cw >= w || head.x < 0 || head.y*cw >= h || head.y < 0  || touch){
 			
+			//save high score
+			if(highScore < score){
+				highScore = score;
+
+				var highScoreElm = document.getElementById('high-score');
+				highScoreElm.innerHTML = 'High Score: '+highScore;
+			}
+
 			//reset
-			swap = true
-			posNeg = 1;
-			xy = 'y';
-			snake_array = [];
-			create_snake();
+			init();
 		}
 	}
 
@@ -92,6 +114,27 @@ $(document).ready(function(){
 
 		foodEaten = foodCheck();
 
+		//check Level
+		if(score != 0 && score%3 == 0 && levelUp == false){
+			level++;
+			gameSpeed = gameSpeed/(level-(level*.45));
+			
+			levelUp = true;
+		}
+
+		paintScore();
+		paintLevel();
+		console.log("speed:",gameSpeed);
+
+		if(foodEaten){
+			createFood();
+			paintFood(food);
+
+		}else{
+			paintFood(food);
+		}
+
+		//Paint snake
 		for(var i = 0; i < snake_array.length; i++){
 
 			var c = snake_array[i];
@@ -102,18 +145,32 @@ $(document).ready(function(){
 			ctx.strokeRect(c.x*cw, c.y*cw, cw, cw);
 		}
 
-		if(foodEaten){
-			createFood();
-			paintFood(food);
-		}else{
-			paintFood(food);
+		if(levelUp){
+			clearInterval(game_loop);
+			game_loop = setInterval(main, gameSpeed);
 		}
+	}
+
+	function paintScore(){
+		ctx.font = "220px Arial";
+		ctx.fillStyle = "#9966FF";
+		ctx.strokeStyle = "black";
+		ctx.textAlign = "center";
+		ctx.fillText(score+' '+level,w/2, h/2);
+
+		var scoreElm = document.getElementById('score');
+		scoreElm.innerHTML = 'Score: '+score;
+	}
+
+	function paintLevel(){
+		var levelElm = document.getElementById('level');
+		levelElm.innerHTML = 'Level: '+level;
 	}
 
 	function createFood(){
 		do{
-			food.x = Math.floor((Math.random() * 9));
-			food.y = Math.floor((Math.random() * 9));
+			food.x = Math.floor((Math.random() * w/cw));
+			food.y = Math.floor((Math.random() * h/cw));
 			food.color = colors[Math.floor((Math.random() * 4))];
 		}while(inBody());
 	}
@@ -142,7 +199,11 @@ $(document).ready(function(){
     		var newX = snake_array[index].x;
     		var newY = snake_array[index].y;
 
+    		//Snake gets longer
     		snake_array.push({x: newX, y: newY, color: colors[3]});
+
+    		levelUp = false;
+    		score++;
 
     		return true;
 		}else{
@@ -183,8 +244,10 @@ $(document).ready(function(){
 
 	})
 
-	//re-paint many times each second
-	game_loop = setInterval(main, 300);
-
+	game_loop_norm();
+	function game_loop_norm(){
+		if(typeof game_loop != "undefined") clearInterval(game_loop);
+		game_loop = setInterval(main, gameSpeed);
+	}
 
 })
