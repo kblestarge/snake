@@ -6,9 +6,9 @@ $(document).ready(function(){
 	var w = $("#canvas").width();
 	var h = $("#canvas").height();
 
-	//Lets save the cell width in a variable for easy control
-	var cw = 20;
-	var colors = ["#F0C600", "#FF9000", "#DB5800", "orange"];
+	//Global variables:
+	var cw = 15;
+	var colors = ['white',"#F0C600", "#FF9000", "orange", "#DB5800", '#D90000', '#2E0927'];
 	var swap = true;
 	var posNeg;
 	var xy;
@@ -22,8 +22,12 @@ $(document).ready(function(){
 	var level;
 	var levelUp;
 	var gameSpeed;
+	var colorInc;
+	var onePass;
 
+	//reset function
 	function init(){
+		onePass = false;
 		score = 0;
 		level = 1;
 		levelUp = false;
@@ -31,7 +35,8 @@ $(document).ready(function(){
 		posNeg = 1;
 		xy = 'y';
 		snake_array = [];
-		gameSpeed = 150;
+		gameSpeed = 100;
+		colorInc = 0;
 
 		create_snake();
 		createFood();
@@ -101,12 +106,8 @@ $(document).ready(function(){
 
 	//Lets paint the lights now
 	function paint()
-	{
-		//Initialize canvas
-		ctx.fillStyle = "white";
-		ctx.fillRect(0, 0, w, h);
-		ctx.strokeStyle = "black";
-		ctx.strokeRect(0, 0, w, h);
+	{	
+		paintCanvas();
 
 		move_snake();
 
@@ -117,14 +118,14 @@ $(document).ready(function(){
 		//check Level
 		if(score != 0 && score%3 == 0 && levelUp == false){
 			level++;
-			gameSpeed = gameSpeed/(level-(level*.45));
+			gameSpeed = gameSpeed-10;
 			
 			levelUp = true;
+			onePass = false;
 		}
 
 		paintScore();
 		paintLevel();
-		console.log("speed:",gameSpeed);
 
 		if(foodEaten){
 			createFood();
@@ -144,19 +145,42 @@ $(document).ready(function(){
 			ctx.strokeStyle = "white";
 			ctx.strokeRect(c.x*cw, c.y*cw, cw, cw);
 		}
+		
+		//This needs to happen only once
+		//increase speed and change color on levelUp
+		if(levelUp && !onePass){
 
-		if(levelUp){
+			changeColor();
 			clearInterval(game_loop);
 			game_loop = setInterval(main, gameSpeed);
+
+			onePass = true;
+		}
+	}
+
+	function paintCanvas(){
+
+		//canvas
+		ctx.fillStyle = colors[colorInc];
+		ctx.fillRect(0, 0, w, h);
+		ctx.strokeStyle = "#59631E";
+		ctx.strokeRect(0, 0, w, h);
+	}
+
+	function changeColor(){
+
+		colorInc++;
+		if(colorInc > colors.length){
+			colorInc = 0;
 		}
 	}
 
 	function paintScore(){
-		ctx.font = "220px Arial";
-		ctx.fillStyle = "#9966FF";
-		ctx.strokeStyle = "black";
+		ctx.font = "350px Arial";
+		ctx.fillStyle = "#C9D787";
+		ctx.strokeStyle = "#C9D787";
 		ctx.textAlign = "center";
-		ctx.fillText(score+' '+level,w/2, h/2);
+		ctx.fillText(level,w/2, h/1.4);
 
 		var scoreElm = document.getElementById('score');
 		scoreElm.innerHTML = 'Score: '+score;
@@ -171,8 +195,10 @@ $(document).ready(function(){
 		do{
 			food.x = Math.floor((Math.random() * w/cw));
 			food.y = Math.floor((Math.random() * h/cw));
-			food.color = colors[Math.floor((Math.random() * 4))];
+			food.color = '#705B35';
 		}while(inBody());
+
+		onePass = false;
 	}
 
 	function inBody(){
@@ -200,7 +226,7 @@ $(document).ready(function(){
     		var newY = snake_array[index].y;
 
     		//Snake gets longer
-    		snake_array.push({x: newX, y: newY, color: colors[3]});
+    		snake_array.push({x: newX, y: newY, color: '#8EA106'});
 
     		levelUp = false;
     		score++;
@@ -232,13 +258,6 @@ $(document).ready(function(){
 	    		xy = 'y';
 	    		posNeg = 1;
 	    		keyPressed = true;
-	    	}else if(e.keyCode == 32) { //space bar
-
-	    		var index = snake_array.length-1;
-	    		var newX = snake_array[index].x;
-	    		var newY = snake_array[index].y;
-
-	    		snake_array.push({x: newX, y: newY, color: colors[3]});
 	    	}
 		}
 

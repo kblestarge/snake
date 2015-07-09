@@ -5,20 +5,28 @@ div{
 }
 
 h1{
-	font-size: 40px;
+	font-family: 'Wallpoet', cursive;
+	font-size: 70px;
 	text-align: center;
+	margin: 0px;
+	color:#59631E;
 }
 
 #score{
-	color: red;
 	display: block;
+	color:#8EA106;
+	margin: 0;
 }
 
 #high-score{
-	color: green;
+	float: right;
 	display: block;
+	color:#59631E;
+	margin-top: 0px;
 }
 
 #level{
 	display: block;
+	color:#8EA106;
+	margin: 0;
 }
